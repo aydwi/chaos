@@ -3,10 +3,9 @@
 
 import sys
 import signal
-import enum
 
+from subprocess import Popen, DEVNULL, TimeoutExpired
 from bs4 import BeautifulSoup, NavigableString
-
 from PyQt5.Qt import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, pyqtSignal, QMimeData, QByteArray
 
@@ -15,10 +14,24 @@ Add/Fix:
 1. Simultaneous selection of unrelated elements
 2. Custom MIME data handling
 3. Avoid reconstructing copy of mime obj for every selection
+4. X11 stuff
 """
 
 
-class Replace():
+def X_server_running():
+    try:
+        proc = Popen(["xset", "q"], stdout=DEVNULL, stderr=DEVNULL)
+    except OSError:
+        return False
+    try:
+        proc.communicate(timeout=8)
+    except TimeoutExpired:
+        proc.kill()
+        proc.communicate()
+    return proc.returncode == 0
+
+
+class ModifyData():
 
     def __init__(self, text):
         self.text = text
@@ -49,7 +62,7 @@ class ClipboardHandler(QObject):
 
         if mime_data.hasText():
             plaintext = mime_data.text()
-            p = Replace(plaintext)
+            p = ModifyData(plaintext)
             modified_plaintext = p.replace_chars()
             fin_mime_data.setText(modified_plaintext)
 
@@ -57,7 +70,7 @@ class ClipboardHandler(QObject):
             markup = mime_data.html()
             soup = BeautifulSoup(markup, 'html.parser')
             for inner_text in list(soup.strings):
-                p = Replace(inner_text)
+                p = ModifyData(inner_text)
                 inner_text.replace_with(NavigableString(p.replace_chars()))
             fin_mime_data.setHtml(str(soup))
 
