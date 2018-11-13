@@ -1,13 +1,17 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import sys
+import json
+import os
+import random
 import signal
+import subprocess
+import sys
 
-from subprocess import Popen, DEVNULL, TimeoutExpired
 from bs4 import BeautifulSoup, NavigableString
 from PyQt5.Qt import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, pyqtSignal, QMimeData, QByteArray
+
 
 """
 Add/Fix:
@@ -15,23 +19,50 @@ Add/Fix:
 2. Custom MIME data handling
 3. Avoid reconstructing copy of mime obj for every selection
 4. X11 stuff
+5. Config options
 """
 
 
 def X_server_running():
+    """Return a bool indicating whether an X server is running or not"""
     try:
-        proc = Popen(["xset", "q"], stdout=DEVNULL, stderr=DEVNULL)
+        proc = subprocess.Popen(["xset", "q"], stdout=subprocess.DEVNULL,
+                                               stderr=subprocess.DEVNULL)
     except OSError:
         return False
     try:
-        proc.communicate(timeout=8)
-    except TimeoutExpired:
+        proc.communicate(timeout=4)
+    except subprocess.TimeoutExpired:
         proc.kill()
         proc.communicate()
     return proc.returncode == 0
 
 
-class ModifyData():
+class ConfigParser:
+
+    def __init__(self):
+        self.default_config = {'save_logs': False,
+                               'randomize': False,
+                               'X11_special_paste': False,
+                               'plaintext_only': False}
+        self.user_config = self.default_config
+
+    def read_config(self):
+        cur_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.split(cur_dir)[0]
+        cfg_path = os.path.join(parent_dir, 'config', 'daemon.json')
+        try:
+            with open(cfg_path) as f:
+                try:
+                    user_config = json.load(f)
+                except json.JSONDecodeError:
+                    sys.exit("Daemon config file is not a valid JSON document!")
+            self.user_config = user_config
+        except FileNotFoundError:
+            pass
+
+
+class ModifyData:
 
     def __init__(self, text):
         self.text = text
