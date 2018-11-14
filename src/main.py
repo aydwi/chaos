@@ -9,6 +9,7 @@ import subprocess
 import sys
 
 from bs4 import BeautifulSoup, NavigableString
+from cerberus import Validator
 from PyQt5.Qt import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, pyqtSignal, QMimeData, QByteArray
 
@@ -20,6 +21,8 @@ Add/Fix:
 3. Avoid reconstructing copy of mime obj for every selection
 4. X11 stuff
 5. Config options
+6. Memory usage considerations
+7. Consider Black code style
 """
 
 
@@ -38,28 +41,37 @@ def X_server_running():
     return proc.returncode == 0
 
 
-class ConfigParser:
+class DaemonConfig:
 
     def __init__(self):
         self.default_config = {'save_logs': False,
                                'randomize': False,
                                'X11_special_paste': False,
                                'plaintext_only': False}
-        self.user_config = self.default_config
+        self.custom_config = self.default_config
 
-    def read_config(self):
+    def set_custom_config(self):
         cur_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.split(cur_dir)[0]
         cfg_path = os.path.join(parent_dir, 'config', 'daemon.json')
         try:
             with open(cfg_path) as f:
                 try:
-                    user_config = json.load(f)
+                    custom_config = json.load(f)
                 except json.JSONDecodeError:
-                    sys.exit("Daemon config file is not a valid JSON document!")
-            self.user_config = user_config
+                    sys.exit("Daemon configuration file is not a valid JSON document!")
+            self.custom_config = custom_config
         except FileNotFoundError:
             pass
+
+    def validate_config(self):
+        schema = {'save_logs': {'type': 'boolean'},
+                  'randomize': {'type': 'boolean'},
+                  'X11_special_paste': {'type': 'boolean'},
+                  'plaintext_only': {'type': 'boolean'}}
+        v = Validator()
+        res = v.validate(self.custom_config, schema)
+        return res
 
 
 class ModifyData:
@@ -76,10 +88,17 @@ class ClipboardHandler(QObject):
 
     def __init__(self):
         super().__init__()
+
+        dconf = DaemonConfig()
+        dconf.set_custom_config()
+        if dconf.validate_config():
+            self.config_flags = dconf.custom_config
+        else:
+            sys.exit("Daemon configuration file is invalid! Please check the specification and try again.")
+
         QGuiApplication.clipboard().dataChanged.connect(self.read_from_clipboard)
 
     def read_from_clipboard(self):
-
         cb = QGuiApplication.clipboard()
 
         mime_data = cb.mimeData()
@@ -118,7 +137,7 @@ if __name__ == "__main__":
     # to avoid the overhead of running the Python interpreter from time
     # to time.
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-
+    
     app = QGuiApplication(sys.argv)
-    clipboardObj = ClipboardHandler()
+    c = ClipboardHandler()
     sys.exit(app.exec_())

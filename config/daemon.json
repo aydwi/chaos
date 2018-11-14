@@ -1,6 +1,6 @@
 {
-    "save_logs": false,
     "plaintext_only": false,
     "randomize": false,
+    "save_logs": false,
     "X11_special_paste": false
 }
