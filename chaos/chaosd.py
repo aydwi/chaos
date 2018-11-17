@@ -1,17 +1,15 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import json
-import os
 import random
 import signal
 import subprocess
 import sys
 
 from bs4 import BeautifulSoup, NavigableString
-from cerberus import Validator
+from config import DaemonConfig
 from PyQt5.Qt import QGuiApplication, QClipboard
-from PyQt5.QtCore import QObject, pyqtSignal, QMimeData, QByteArray
+from PyQt5.QtCore import QObject, pyqtSignal, QMimeData
 
 
 """
@@ -20,7 +18,7 @@ Add/Fix:
 2. Custom MIME data handling
 3. Avoid reconstructing copy of mime obj for every selection
 4. X11 stuff
-5. Config options
+5. Config options - More rando
 6. Memory usage considerations
 7. Consider Black code style
 """
@@ -41,46 +39,14 @@ def X_server_running():
     return proc.returncode == 0
 
 
-class DaemonConfig:
-
-    def __init__(self):
-        self.default_config = {'save_logs': False,
-                               'randomize': False,
-                               'X11_special_paste': False,
-                               'plaintext_only': False}
-        self.custom_config = self.default_config
-
-    def set_custom_config(self):
-        cur_dir = os.path.dirname(os.path.abspath(__file__))
-        parent_dir = os.path.split(cur_dir)[0]
-        cfg_path = os.path.join(parent_dir, 'config', 'daemon.json')
-        try:
-            with open(cfg_path) as f:
-                try:
-                    custom_config = json.load(f)
-                except json.JSONDecodeError:
-                    sys.exit("Daemon configuration file is not a valid JSON document!")
-            self.custom_config = custom_config
-        except FileNotFoundError:
-            pass
-
-    def validate_config(self):
-        schema = {'save_logs': {'type': 'boolean'},
-                  'randomize': {'type': 'boolean'},
-                  'X11_special_paste': {'type': 'boolean'},
-                  'plaintext_only': {'type': 'boolean'}}
-        v = Validator()
-        res = v.validate(self.custom_config, schema)
-        return res
-
-
 class ModifyData:
 
     def __init__(self, text):
         self.text = text
 
     def replace_chars(self):
-        new_str = self.text.replace('a', b'\xcd\xbe'.decode('utf-8'))
+        gqm = b'\xcd\xbe'
+        new_str = self.text.replace('a', gqm.decode('utf-8'))
         return new_str
 
 
@@ -89,21 +55,29 @@ class ClipboardHandler(QObject):
     def __init__(self):
         super().__init__()
 
-        dconf = DaemonConfig()
-        dconf.set_custom_config()
-        if dconf.validate_config():
-            self.config_flags = dconf.custom_config
+        dc = DaemonConfig()
+        dc.set_config()
+        if dc.valid_config():
+            self.config_flags = dc.custom_config
         else:
-            sys.exit("Daemon configuration file is invalid! Please check the specification and try again.")
+            sys.exit("Error: Daemon configuration file is invalid!")
 
-        QGuiApplication.clipboard().dataChanged.connect(self.read_from_clipboard)
+        clipboard = QGuiApplication.clipboard()
+        clipboard.dataChanged.connect(self.clipboard_changed)
 
-    def read_from_clipboard(self):
-        cb = QGuiApplication.clipboard()
+    def clipboard_changed(self):
 
-        mime_data = cb.mimeData()
+        clipboard = QGuiApplication.clipboard()
+
+        mime_data = clipboard.mimeData()
         format_list = mime_data.formats()
+        print(format_list)
         fin_mime_data = QMimeData()
+
+        print("\n")
+        for x in format_list:
+            print("For format " + str(x))
+            print(mime_data.data(x))
 
         for format in format_list:
             if not format == "text/plain" and not format == "text/html":
@@ -124,9 +98,9 @@ class ClipboardHandler(QObject):
                 inner_text.replace_with(NavigableString(p.replace_chars()))
             fin_mime_data.setHtml(str(soup))
 
-        bool_state = cb.blockSignals(True)
-        cb.setMimeData(fin_mime_data)
-        cb.blockSignals(bool_state)
+        temp_state = clipboard.blockSignals(True)
+        clipboard.setMimeData(fin_mime_data)
+        clipboard.blockSignals(temp_state)
 
 
 if __name__ == "__main__":
