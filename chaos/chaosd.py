@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import random
+import functools
+import os
 import signal
 import subprocess
 import sys
@@ -10,7 +11,7 @@ from bs4 import BeautifulSoup, NavigableString
 from config import DaemonConfig
 from PyQt5.Qt import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, pyqtSignal, QMimeData
-
+from random import random
 
 """
 Add/Fix:
@@ -18,10 +19,22 @@ Add/Fix:
 2. Custom MIME data handling
 3. Avoid reconstructing copy of mime obj for every selection
 4. X11 stuff
-5. Config options - More rando
+5. Config options - More random
 6. Memory usage considerations
 7. Consider Black code style
 """
+
+def random_hit_chance_util(flag):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            if random() < 0.5:
+                func(*args, **kwargs)
+        if flag:
+            return wrapper
+        else:
+            return func
+    return decorator
 
 
 def X_server_running():
@@ -54,27 +67,24 @@ class ModifyData:
 
 class ClipboardHandler(QObject):
 
+    dc = DaemonConfig()
+    dc.set_config()
+    if dc.valid_config():
+        cfg = dc.custom_config
+    else:
+        sys.exit("Error: Daemon configuration file is invalid!")
+
     def __init__(self):
         super().__init__()
 
-        dc = DaemonConfig()
-        dc.set_config()
-        if dc.valid_config():
-            self.config_flags = dc.custom_config
-        else:
-            sys.exit("Error: Daemon configuration file is invalid!")
-
         self.clipboard = QGuiApplication.clipboard()
         self.clipboard.dataChanged.connect(self.overwrite)
-
-    def filter(self):
-        pass
 
     def reconstruct(self, mime_data):
         fin_mime_data = QMimeData()
 
         format_list = mime_data.formats()
-        print(format_list)
+        #print(format_list)
 
         for format in format_list:
             if not format == "text/plain" and not format == "text/html":
@@ -97,22 +107,31 @@ class ClipboardHandler(QObject):
 
         return fin_mime_data
 
+    @random_hit_chance_util(cfg["random_hit_chance"])
     def overwrite(self):
+        
         mime_data = self.clipboard.mimeData()
         fin_mime_data = self.reconstruct(mime_data)
 
         temp_state = self.clipboard.blockSignals(True)
         self.clipboard.setMimeData(fin_mime_data)
         self.clipboard.blockSignals(temp_state)
-        
 
 if __name__ == "__main__":
 
+    # Courtesy of a known bug, Qt fires the qWarning
+    # "QXcbClipboard::setMimeData: Cannot set X11 selection owner"
+    # while setting clipboard data when cut/copy events are encountered
+    # in rapid succession, resulting in clipboard data not being set.
+    # This env variable acts as a fail-safe which aborts the application
+    # if this happens more than once.
+    os.environ["QT_FATAL_WARNINGS"] = "1"
+
     # Python cannot handle signals while the Qt event loop is running.
-    # This statement is required to force quit (dump core and exit) the
-    # application when Ctrl-C is pressed. A custom handler is not used
-    # to avoid the overhead of running the Python interpreter from time
-    # to time.
+    # This is required to force quit the application when SIGINT is sent, 
+    # typically during development or testing. A custom handler is not
+    # used here to avoid the overhead of running the Python interpreter
+    # from time to time.
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     
     app = QGuiApplication(sys.argv)
