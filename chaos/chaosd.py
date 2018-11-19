@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import functools
 import os
 import signal
 import subprocess
@@ -9,9 +8,9 @@ import sys
 
 from bs4 import BeautifulSoup, NavigableString
 from config import DaemonConfig
+from configutils import random_hit_chance_util
 from PyQt5.Qt import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, pyqtSignal, QMimeData
-from random import random
 
 """
 Add/Fix:
@@ -23,18 +22,6 @@ Add/Fix:
 6. Memory usage considerations
 7. Consider Black code style
 """
-
-def random_hit_chance_util(flag):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            if random() < 0.5:
-                func(*args, **kwargs)
-        if flag:
-            return wrapper
-        else:
-            return func
-    return decorator
 
 
 def X_server_running():
