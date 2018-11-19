@@ -45,9 +45,11 @@ class ModifyData:
         self.text = text
 
     def replace_chars(self):
-        gqm = b'\xcd\xbe'
-        new_str = self.text.replace('a', gqm.decode('utf-8'))
-        return new_str
+        target = b'a'.decode("utf-8")
+        gqm = b'\xcd\xbe'.decode("utf-8")
+
+        s = self.text.replace(target, gqm)
+        return s
 
 
 class ClipboardHandler(QObject):
@@ -62,22 +64,17 @@ class ClipboardHandler(QObject):
         else:
             sys.exit("Error: Daemon configuration file is invalid!")
 
-        clipboard = QGuiApplication.clipboard()
-        clipboard.dataChanged.connect(self.clipboard_changed)
+        self.clipboard = QGuiApplication.clipboard()
+        self.clipboard.dataChanged.connect(self.overwrite)
 
-    def clipboard_changed(self):
+    def filter(self):
+        pass
 
-        clipboard = QGuiApplication.clipboard()
-
-        mime_data = clipboard.mimeData()
-        format_list = mime_data.formats()
-        print(format_list)
+    def reconstruct(self, mime_data):
         fin_mime_data = QMimeData()
 
-        print("\n")
-        for x in format_list:
-            print("For format " + str(x))
-            print(mime_data.data(x))
+        format_list = mime_data.formats()
+        print(format_list)
 
         for format in format_list:
             if not format == "text/plain" and not format == "text/html":
@@ -92,16 +89,22 @@ class ClipboardHandler(QObject):
 
         if mime_data.hasHtml():
             markup = mime_data.html()
-            soup = BeautifulSoup(markup, 'html.parser')
+            soup = BeautifulSoup(markup, "html.parser")
             for inner_text in list(soup.strings):
                 p = ModifyData(inner_text)
                 inner_text.replace_with(NavigableString(p.replace_chars()))
             fin_mime_data.setHtml(str(soup))
 
-        temp_state = clipboard.blockSignals(True)
-        clipboard.setMimeData(fin_mime_data)
-        clipboard.blockSignals(temp_state)
+        return fin_mime_data
 
+    def overwrite(self):
+        mime_data = self.clipboard.mimeData()
+        fin_mime_data = self.reconstruct(mime_data)
+
+        temp_state = self.clipboard.blockSignals(True)
+        self.clipboard.setMimeData(fin_mime_data)
+        self.clipboard.blockSignals(temp_state)
+        
 
 if __name__ == "__main__":
 

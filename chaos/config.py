@@ -14,6 +14,7 @@ class DaemonConfig:
         self.custom_config = self.default_config
 
     def set_config(self):
+        """Read and set custom daemon configuration if provided."""
         cur_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.split(cur_dir)[0]
         cfg_path = os.path.join(parent_dir, 'config', 'daemon.json')
@@ -28,6 +29,7 @@ class DaemonConfig:
             pass
 
     def valid_config(self):
+        """Return a bool indicating the validity of custom daemon configuration."""
         schema = {'save_logs': {'type': 'boolean'},
                   'randomize': {'type': 'boolean'},
                   'X11_special_paste': {'type': 'boolean'},
