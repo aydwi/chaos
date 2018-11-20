@@ -3,37 +3,23 @@
 
 import os
 import signal
-import subprocess
 import sys
 
+from config import DaemonConfig
+from utils import Xstatus, randomhit
+
 from bs4 import BeautifulSoup, NavigableString
-from configoptions import DaemonConfig
-from configutils import randomhit
 from PyQt5.Qt import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, QMimeData
+
 
 """
 Add/Fix:
 1. X11 stuff
 2. Config options
-3. Memory usage considerations
-4. Consider Black code style
+3. Memory considerations
+4. Black code style
 """
-
-
-def X_server_running():
-    """Return a bool indicating whether an X server is running or not"""
-    try:
-        proc = subprocess.Popen(["xset", "q"], stdout=subprocess.DEVNULL,
-                                               stderr=subprocess.DEVNULL)
-    except OSError:
-        return False
-    try:
-        proc.communicate(timeout=4)
-    except subprocess.TimeoutExpired:
-        proc.kill()
-        proc.communicate()
-    return proc.returncode == 0
 
 
 class ModifyData:
@@ -44,7 +30,6 @@ class ModifyData:
     def replace_chars(self):
         target = b'a'.decode("utf-8")
         gqm = b'\xcd\xbe'.decode("utf-8")
-
         s = self.text.replace(target, gqm)
         return s
 
@@ -60,13 +45,11 @@ class ClipboardHandler(QObject):
 
     def __init__(self):
         super().__init__()
-
         clipboard = QGuiApplication.clipboard()
         clipboard.dataChanged.connect(self.overwrite)
 
     def unsafe(self, mime_data):
         format_list = mime_data.formats()
-
         if not format_list:
             return True
 
@@ -75,9 +58,9 @@ class ClipboardHandler(QObject):
         if mime_data.hasImage() or mime_data.hasUrls():
             return True
 
-        # Custom MIME data is very application specific and varies
-        # wildly across applications. It usually takes the format:
-        # application/x-x-x;value="somevalue"
+        # Custom MIME data is highly specific and varies wildly across
+        # applications. It usually takes the format:
+        # application/x-y-z;value="somevalue"
         # Currently, chaos does not modify objects with such MIME data.
         for format in format_list:
             if format.endswith('"'):

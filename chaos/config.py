@@ -4,6 +4,7 @@ import sys
 
 from cerberus import Validator
 
+
 class DaemonConfig:
 
     def __init__(self):
