@@ -25,7 +25,8 @@ class DaemonConfig:
                 try:
                     custom_config = json.load(f)
                 except json.JSONDecodeError:
-                    sys.exit("Error: Daemon configuration file is not a valid JSON document!")
+                    sys.exit("Error: Daemon configuration file is "
+                             "not a valid JSON document!")
             self.custom_config = custom_config
         except FileNotFoundError:
             pass

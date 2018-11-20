@@ -115,12 +115,12 @@ if __name__ == "__main__":
     os.environ["QT_FATAL_WARNINGS"] = "1"
 
     # Python cannot handle signals while the Qt event loop is running.
-    # This is required to force quit the application when SIGINT is sent, 
+    # This is required to force quit the application when SIGINT is sent,
     # typically during development or testing. A custom handler is not
     # used here to avoid the overhead of running the Python interpreter
     # from time to time.
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    
+
     app = QGuiApplication(sys.argv)
     c = ClipboardHandler()
     sys.exit(app.exec_())
