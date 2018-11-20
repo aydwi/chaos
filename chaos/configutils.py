@@ -2,7 +2,7 @@ import functools
 
 from random import random
 
-def random_hit_chance_util(flag):
+def randomhit(flag):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):

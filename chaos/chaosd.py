@@ -7,20 +7,17 @@ import subprocess
 import sys
 
 from bs4 import BeautifulSoup, NavigableString
-from config import DaemonConfig
-from configutils import random_hit_chance_util
+from configoptions import DaemonConfig
+from configutils import randomhit
 from PyQt5.Qt import QGuiApplication, QClipboard
-from PyQt5.QtCore import QObject, pyqtSignal, QMimeData
+from PyQt5.QtCore import QObject, QMimeData
 
 """
 Add/Fix:
-1. Simultaneous selection of unrelated elements
-2. Custom MIME data handling
-3. Avoid reconstructing copy of mime obj for every selection
-4. X11 stuff
-5. Config options - More random
-6. Memory usage considerations
-7. Consider Black code style
+1. X11 stuff
+2. Config options
+3. Memory usage considerations
+4. Consider Black code style
 """
 
 
@@ -64,14 +61,31 @@ class ClipboardHandler(QObject):
     def __init__(self):
         super().__init__()
 
-        self.clipboard = QGuiApplication.clipboard()
-        self.clipboard.dataChanged.connect(self.overwrite)
+        clipboard = QGuiApplication.clipboard()
+        clipboard.dataChanged.connect(self.overwrite)
+
+    def unsafe(self, mime_data):
+        format_list = mime_data.formats()
+
+        if not format_list:
+            return True
+
+        # Filter the MIME types "image/*" to ignore image data
+        # and "text/uri-list" to ignore files and directories.
+        if mime_data.hasImage() or mime_data.hasUrls():
+            return True
+
+        # Custom MIME data is very application specific and varies
+        # wildly across applications. It usually takes the format:
+        # application/x-x-x;value="somevalue"
+        # Currently, chaos does not modify objects with such MIME data.
+        for format in format_list:
+            if format.endswith('"'):
+                return True
 
     def reconstruct(self, mime_data):
-        fin_mime_data = QMimeData()
-
         format_list = mime_data.formats()
-        #print(format_list)
+        fin_mime_data = QMimeData()
 
         for format in format_list:
             if not format == "text/plain" and not format == "text/html":
@@ -94,24 +108,27 @@ class ClipboardHandler(QObject):
 
         return fin_mime_data
 
-    @random_hit_chance_util(cfg["random_hit_chance"])
+    @randomhit(cfg["random_hit_chance"])
     def overwrite(self):
-        
-        mime_data = self.clipboard.mimeData()
-        fin_mime_data = self.reconstruct(mime_data)
+        clipboard = QGuiApplication.clipboard()
+        mime_data = clipboard.mimeData()
 
-        temp_state = self.clipboard.blockSignals(True)
-        self.clipboard.setMimeData(fin_mime_data)
-        self.clipboard.blockSignals(temp_state)
+        if not self.unsafe(mime_data):
+            fin_mime_data = self.reconstruct(mime_data)
+            temp_state = clipboard.blockSignals(True)
+            clipboard.setMimeData(fin_mime_data)
+            clipboard.blockSignals(temp_state)
+
 
 if __name__ == "__main__":
 
-    # Courtesy of a known bug, Qt fires the qWarning
+    # On systems running X11, possibly due to a bug, Qt fires the qWarning
     # "QXcbClipboard::setMimeData: Cannot set X11 selection owner"
     # while setting clipboard data when cut/copy events are encountered
     # in rapid succession, resulting in clipboard data not being set.
     # This env variable acts as a fail-safe which aborts the application
-    # if this happens more than once.
+    # if this happens more than once. Similar situation arises when another
+    # clipboard management app (like GPaste) is running alongside chaos.
     os.environ["QT_FATAL_WARNINGS"] = "1"
 
     # Python cannot handle signals while the Qt event loop is running.
