@@ -48,7 +48,7 @@ class ClipboardHandler(QObject):
     def __init__(self):
         super().__init__()
         clipboard = QGuiApplication.clipboard()
-        clipboard.dataChanged.connect(self.driver)
+        clipboard.dataChanged.connect(self.overwrite)
 
     def unsafe(self, mime_data):
         format_list = mime_data.formats()
@@ -68,12 +68,15 @@ class ClipboardHandler(QObject):
             if format.endswith('"'):
                 return True
 
-    def reconstruct(self, mime_data):
-        # To-do: Improve this implementation to avoid
-        # extra if check after branching inside driver.
-        format_list = mime_data.formats()
-        fin_mime_data = QMimeData()
+    def tset(self, mime_data, fin_mime_data, format_list):
+        if mime_data.hasText():
+            plaintext = mime_data.text()
+            p = ModifyData(plaintext)
+            modified_plaintext = p.replace_chars()
+            fin_mime_data.setText(modified_plaintext)
+            format_list.remove('text/plain')
 
+    def hset(self, mime_data, fin_mime_data, format_list):
         if mime_data.hasHtml():
             markup = mime_data.html()
             soup = BeautifulSoup(markup, "html.parser")
@@ -83,37 +86,36 @@ class ClipboardHandler(QObject):
             fin_mime_data.setHtml(str(soup))
             format_list.remove('text/html')
 
-        if mime_data.hasText():
-            plaintext = mime_data.text()
-            p = ModifyData(plaintext)
-            modified_plaintext = p.replace_chars()
-            fin_mime_data.setText(modified_plaintext)
-            format_list.remove('text/plain')
-
+    def oset(self, mime_data, fin_mime_data, format_list):
         for format in format_list:
             orig_data = mime_data.data(format)
             fin_mime_data.setData(format, orig_data)
 
-        return fin_mime_data
-
-    def set(self, mime_data):
+    def set_clipboard(self, fin_mime_data):
         clipboard = QGuiApplication.clipboard()
-        fin_mime_data = self.reconstruct(mime_data)
-        temp_state = clipboard.blockSignals(True)
+        tmp = clipboard.blockSignals(True)
         clipboard.setMimeData(fin_mime_data)
-        clipboard.blockSignals(temp_state)
+        clipboard.blockSignals(tmp)
 
     @randomhit(cfg["random_hit_chance"])
-    def driver(self):
+    def overwrite(self):
         clipboard = QGuiApplication.clipboard()
+
         mime_data = clipboard.mimeData()
+        fin_mime_data = QMimeData()
+        format_list = mime_data.formats()
 
         if not self.unsafe(mime_data):
             if not ClipboardHandler.cfg["plaintext_only"]:
-                self.set(mime_data)
+                self.tset(mime_data, fin_mime_data, format_list)
+                self.hset(mime_data, fin_mime_data, format_list)
+                self.oset(mime_data, fin_mime_data, format_list)
+                self.set_clipboard(fin_mime_data)
             else:
                 if not mime_data.hasHtml():
-                    self.set(mime_data)
+                    self.tset(mime_data, fin_mime_data, format_list)
+                    self.oset(mime_data, fin_mime_data, format_list)
+                    self.set_clipboard(fin_mime_data)
 
 
 if __name__ == "__main__":
