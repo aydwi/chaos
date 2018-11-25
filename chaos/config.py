@@ -33,11 +33,24 @@ class DaemonConfig:
 
     def valid_config(self):
         """Return a bool indicating the validity of custom daemon configuration."""
-        schema = {"plaintext_only": {"type": "boolean"},
+        schemas = [{"plaintext_only": {"type": "boolean",
+                                     "allowed": [False]},
+                  "random_hit_chance": {"type": "boolean"},
+                  "random_instances": {"type": "boolean",
+                                       "forbidden": [True]},
+                  "save_logs": {"type": "boolean"},
+                  "X11_special_paste": {"type": "boolean"}},
+
+                  {"plaintext_only": {"type": "boolean",
+                                     "allowed": [True]},
                   "random_hit_chance": {"type": "boolean"},
                   "random_instances": {"type": "boolean"},
                   "save_logs": {"type": "boolean"},
-                  "X11_special_paste": {"type": "boolean"}}
-        v = Validator()
-        res = v.validate(self.custom_config, schema)
+                  "X11_special_paste": {"type": "boolean"}}]
+
+        schema = {"c": {"oneof_schema": schemas, "type": "dict"}}
+        v = Validator(schema)
+
+        config = {"c": self.custom_config}
+        res = v.validate(config)
         return res

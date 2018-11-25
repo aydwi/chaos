@@ -6,7 +6,7 @@ import signal
 import sys
 
 from config import DaemonConfig
-from utils import Xstatus, randomhit
+from utils import randomhit
 
 from bs4 import BeautifulSoup, NavigableString
 from PyQt5.Qt import QGuiApplication, QClipboard
@@ -15,12 +15,12 @@ from PyQt5.QtCore import QObject, QMimeData
 
 """
 Add/Fix:
-1. X11 stuff
-2. Config options
-3. Memory considerations
-4. Black code style
-5. Preserve data after quitting
-6. Charset parameter
+1. Config options
+2. Preserve data after quitting
+3. Custom chars support
+4. Tests
+5. Coverage
+6. Daemonize
 """
 
 
@@ -48,6 +48,7 @@ class ClipboardHandler(QObject):
     def __init__(self):
         super().__init__()
         clipboard = QGuiApplication.clipboard()
+        #clipboard.selectionChanged.connect(self.foo)
         clipboard.dataChanged.connect(self.overwrite)
 
     def unsafe(self, mime_data):
@@ -55,7 +56,7 @@ class ClipboardHandler(QObject):
         if not format_list:
             return True
 
-        # Filter the MIME type "image/*" to ignore image data
+        # Filter the MIME types "image/*" to ignore image data
         # and "text/uri-list" to ignore files and directories.
         if mime_data.hasImage() or mime_data.hasUrls():
             return True
