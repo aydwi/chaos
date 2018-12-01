@@ -57,7 +57,7 @@ class MimeHandler:
         self.fin_mime_data = fin_mime_data
         self.format_list = format_list
 
-    def filter(self):
+    def ignore(self):
         if not self.format_list:
             return True
 
@@ -66,15 +66,12 @@ class MimeHandler:
         if self.mime_data.hasImage() or self.mime_data.hasUrls():
             return True
 
-        # Custom MIME data can vary wildly across applications, and
-        # usually takes the following format:
-        # application/x-y-z;value="somevalue"
-        # Currently, chaos does not modify objects with such MIME data.
+        # chaos does not reconstruct objects with custom MIME data.
         for format in self.format_list:
             if format.endswith('"'):
                 return True
 
-    def tset(self):
+    def set_text(self):
         if self.mime_data.hasText():
             plaintext = self.mime_data.text()
             p = ModifyData(plaintext)
@@ -82,7 +79,7 @@ class MimeHandler:
             self.fin_mime_data.setText(modified_plaintext)
             self.format_list.remove('text/plain')
 
-    def hset(self):
+    def set_html(self):
         if self.mime_data.hasHtml():
             markup = self.mime_data.html()
             soup = BeautifulSoup(markup, "html.parser")
@@ -92,7 +89,7 @@ class MimeHandler:
             self.fin_mime_data.setHtml(str(soup))
             self.format_list.remove('text/html')
 
-    def oset(self):
+    def set_other(self):
         for format in self.format_list:
             orig_data = self.mime_data.data(format)
             self.fin_mime_data.setData(format, orig_data)
@@ -109,33 +106,31 @@ class Clipboard(QObject):
 
     def __init__(self):
         super().__init__()
-        clipboard = QGuiApplication.clipboard()
-        clipboard.dataChanged.connect(self.overwrite)
+        self.clipboard = QGuiApplication.clipboard()
+        self.clipboard.dataChanged.connect(self.reconstruct)
 
     def set_mime_data(self, fin_mime_data):
-        clipboard = QGuiApplication.clipboard()
-        tmp = clipboard.blockSignals(True)
-        clipboard.setMimeData(fin_mime_data, mode = 0)
-        clipboard.blockSignals(tmp)
+        tmp = self.clipboard.blockSignals(True)
+        self.clipboard.setMimeData(fin_mime_data, mode=0)
+        self.clipboard.blockSignals(tmp)
 
     @enable_rhc(config["random_hit_chance"])
-    def overwrite(self):
-        clipboard = QGuiApplication.clipboard()
-        mime_data = clipboard.mimeData(mode = 0)
+    def reconstruct(self):
+        mime_data = self.clipboard.mimeData(mode=0)
         fin_mime_data = QMimeData()
         format_list = mime_data.formats()
         mh = MimeHandler(mime_data, fin_mime_data, format_list)
 
-        if not mh.filter():
+        if not mh.ignore():
             if not Clipboard.config["plaintext_only"]:
-                mh.tset()
-                mh.hset()
-                mh.oset()
+                mh.set_text()
+                mh.set_html()
+                mh.set_other()
                 self.set_mime_data(fin_mime_data)
             else:
                 if not mime_data.hasHtml():
-                    mh.tset()
-                    mh.oset()
+                    mh.set_text()
+                    mh.set_other()
                     self.set_mime_data(fin_mime_data)
 
 
@@ -143,18 +138,13 @@ if __name__ == "__main__":
 
     # On systems running X11, possibly due to a bug, Qt fires the qWarning
     # "QXcbClipboard::setMimeData: Cannot set X11 selection owner"
-    # while setting clipboard data when cut/copy events are encountered
+    # while setting clipboard data when copy/selection events are encountered
     # in rapid succession, resulting in clipboard data not being set.
     # This env variable acts as a fail-safe which aborts the application
     # if this happens more than once. Similar situation arises when another
     # clipboard management app (like GPaste) is running alongside chaos.
     os.environ["QT_FATAL_WARNINGS"] = "1"
 
-    # Python cannot handle signals while the Qt event loop is running.
-    # This is required to force quit the application when SIGINT is sent,
-    # typically during development or testing. A custom handler is not
-    # used here to avoid the overhead of running the Python interpreter
-    # from time to time.
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     app = QGuiApplication(sys.argv)
