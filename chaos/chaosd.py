@@ -17,12 +17,13 @@ from PyQt5.QtCore import QObject, QMimeData
 """
 Add/Fix:
 1. Config options
-2. Preserve data after (force) quitting
-3. Custom chars support
-4. Tests and coverage
-5. Dependency Injection
-6. Daemonize
+2. Tests and coverage
+3. Dependency Injection
+4. Daemonize
 """
+
+TARGET = 'a'
+GQM = b'\xcd\xbe'.decode("utf-8")
 
 
 def enable_rhc(flag):
@@ -38,19 +39,24 @@ def enable_rhc(flag):
     return decorator
 
 
-class ModifyData:
+def enable_ri(flag):
+    def decorator(func):
+        @functools.wraps(func)
+        def decorated_func(*args, **kwargs):
+            text = args[1]
+            occurences = [index for index, val in enumerate(text) if val == TARGET]
+            for occurence in occurences:
+                if random() < 0.5:
+                    text = text[:occurence] + GQM + text[occurence+1:]
+            return text
+        if flag:
+            return decorated_func
+        else:
+            return func
+    return decorator
 
-    def __init__(self, text):
-        self.text = text
 
-    def replace_chars(self):
-        target = b'a'.decode("utf-8")
-        gqm = b'\xcd\xbe'.decode("utf-8")
-        s = self.text.replace(target, gqm)
-        return s
-
-
-class MimeHandler:
+class DataHandler:
 
     def __init__(self, mime_data, fin_mime_data, format_list):
         self.mime_data = mime_data
@@ -71,11 +77,15 @@ class MimeHandler:
             if format.endswith('"'):
                 return True
 
+    @enable_ri(False)
+    def replace_chars(self, text):
+        s = text.replace(TARGET, GQM)
+        return s
+
     def set_text(self):
         if self.mime_data.hasText():
             plaintext = self.mime_data.text()
-            p = ModifyData(plaintext)
-            modified_plaintext = p.replace_chars()
+            modified_plaintext = self.replace_chars(plaintext)
             self.fin_mime_data.setText(modified_plaintext)
             self.format_list.remove('text/plain')
 
@@ -84,8 +94,7 @@ class MimeHandler:
             markup = self.mime_data.html()
             soup = BeautifulSoup(markup, "html.parser")
             for inner_text in list(soup.strings):
-                p = ModifyData(inner_text)
-                inner_text.replace_with(NavigableString(p.replace_chars()))
+                inner_text.replace_with(NavigableString(self.replace_chars(inner_text)))
             self.fin_mime_data.setHtml(str(soup))
             self.format_list.remove('text/html')
 
@@ -119,7 +128,7 @@ class Clipboard(QObject):
         mime_data = self.clipboard.mimeData(mode=0)
         fin_mime_data = QMimeData()
         format_list = mime_data.formats()
-        mh = MimeHandler(mime_data, fin_mime_data, format_list)
+        mh = DataHandler(mime_data, fin_mime_data, format_list)
 
         if not mh.ignore():
             if not Clipboard.config["plaintext_only"]:
