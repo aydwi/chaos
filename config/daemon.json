@@ -1,7 +1,6 @@
 {
-    "plaintext_only": true,
+    "plaintext_only": false,
     "random_hit_chance": false,
-    "random_instances": true,
-    "save_logs": false,
-    "X11_special_paste": false
+    "random_instances": false,
+    "save_logs": false
 }
