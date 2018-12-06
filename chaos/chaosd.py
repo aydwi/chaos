@@ -43,7 +43,7 @@ def enable_ri(flag):
     def decorator(func):
         @functools.wraps(func)
         def decorated_func(*args, **kwargs):
-            text = args[1]
+            text = args[0]
             occurences = [index for index, val in enumerate(text) if val == TGT]
             for occurence in occurences:
                 if random() < 0.5:
@@ -58,10 +58,12 @@ def enable_ri(flag):
 
 class MimeHandler:
 
-    def __init__(self, mime_data, fin_mime_data, format_list):
+    def __init__(self, mime_data, fin_mime_data, format_list, config_dict):
         self.mime_data = mime_data
         self.fin_mime_data = fin_mime_data
         self.format_list = format_list
+        self.config_dict = config_dict
+        self.modify_text = enable_ri(config_dict["random_instances"])(self.modify_text)
 
     def restricted_type(self):
         if not self.format_list:
@@ -77,7 +79,6 @@ class MimeHandler:
             if format.endswith('"'):
                 return True
 
-    @enable_ri(False)
     def modify_text(self, text):
         s = text.replace(TGT, GQM)
         return s
@@ -106,16 +107,11 @@ class MimeHandler:
 
 class Clipboard(QObject):
 
-    dconf = DaemonConfig()
-    dconf.setup()
-    if dconf.valid():
-        config = dconf.custom_config
-    else:
-        sys.exit("Error: Daemon configuration file is invalid!")
-
-    def __init__(self):
+    def __init__(self, config_dict):
         super().__init__()
-        self.clipboard = QGuiApplication.clipboard()
+        self.config_dict = config_dict
+        self.clipboard = QGuiApplication.clipboard()        
+        self.reconstruct = enable_rhc(config_dict["random_hit_chance"])(self.reconstruct)
         self.clipboard.dataChanged.connect(self.reconstruct)
 
     def set_mime_data(self, fin_mime_data):
@@ -123,23 +119,29 @@ class Clipboard(QObject):
         self.clipboard.setMimeData(fin_mime_data, mode=0)
         self.clipboard.blockSignals(tmp)
 
-    @enable_rhc(config["random_hit_chance"])
+    # This method is wrapped by a decorator to modify its behaviour
+    # based on value of the config flag "random_hit_chance", passed
+    # to it as an argument, handled by the function "enable_rhc".
+    # Note that this is done when the class is instantiated (see the
+    # constructor), instead of when the class is created (which uses
+    # the @decorator syntax), because the argument comes from an
+    # instance variable (config_dict).
     def reconstruct(self):
         mime_data = self.clipboard.mimeData(mode=0)
         fin_mime_data = QMimeData()
         format_list = mime_data.formats()
-        mh = MimeHandler(mime_data, fin_mime_data, format_list)
+        mimeobj = MimeHandler(mime_data, fin_mime_data, format_list, self.config_dict)
 
-        if not mh.restricted_type():
-            if not Clipboard.config["plaintext_only"]:
-                mh.set_text()
-                mh.set_html()
-                mh.set_other()
+        if not mimeobj.restricted_type():
+            if not self.config_dict["plaintext_only"]:
+                mimeobj.set_text()
+                mimeobj.set_html()
+                mimeobj.set_other()
                 self.set_mime_data(fin_mime_data)
             else:
                 if not mime_data.hasHtml():
-                    mh.set_text()
-                    mh.set_other()
+                    mimeobj.set_text()
+                    mimeobj.set_other()
                     self.set_mime_data(fin_mime_data)
 
 
@@ -156,6 +158,13 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+    dconf = DaemonConfig()
+    dconf.setup()
+    if dconf.valid():
+        config_dict = dconf.custom_config
+    else:
+        sys.exit("Error: Daemon configuration file is invalid!")
+
     app = QGuiApplication(sys.argv)
-    c = Clipboard()
+    c = Clipboard(config_dict)
     sys.exit(app.exec_())
