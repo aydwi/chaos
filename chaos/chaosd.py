@@ -79,6 +79,13 @@ class MimeHandler:
             if format.endswith('"'):
                 return True
 
+    # This method is wrapped by a decorator to modify its behaviour
+    # based on value of the config flag "random_instances", passed
+    # to it as an argument, handled by the function "enable_ri".
+    # Note that this is done when the class is instantiated (see the
+    # constructor), instead of when the class is created (which uses
+    # the @decorator syntax), because the argument comes from an
+    # instance variable (config_dict).
     def modify_text(self, text):
         s = text.replace(TGT, GQM)
         return s
