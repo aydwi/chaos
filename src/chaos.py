@@ -151,9 +151,7 @@ class Clipboard(QObject):
                     mimeobj.set_other()
                     self.set_mime_data(fin_mime_data)
 
-
-if __name__ == "__main__":
-
+def main():
     # On systems running X11, possibly due to a bug, Qt fires the qWarning
     # "QXcbClipboard::setMimeData: Cannot set X11 selection owner"
     # while setting clipboard data when copy/selection events are encountered
