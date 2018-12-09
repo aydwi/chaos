@@ -10,16 +10,17 @@ from config import DaemonConfig
 from random import random
 
 from bs4 import BeautifulSoup, NavigableString
-from PyQt5.Qt import QGuiApplication, QClipboard
+from PyQt5.QtGui import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, QMimeData
 
 
 """
 Add/Fix:
 1. Logging
-2. Tests and coverage
-3. Dependency Injection
-4. Daemonize
+2. Daemonize
+3. File Descriptors
+4. Tests and coverage
+5. Build system
 """
 
 TGT = b'a'.decode("utf-8")
@@ -151,7 +152,17 @@ class Clipboard(QObject):
                     mimeobj.set_other()
                     self.set_mime_data(fin_mime_data)
 
-def main():
+
+def initialize():
+    daemon_config = DaemonConfig()
+    daemon_config.setup()
+    if not daemon_config.valid():
+        sys.exit("Error: Daemon configuration is incorrect!")
+    config_dict = daemon_config.custom_config
+    return config_dict
+
+
+def execute(config_dict):
     # On systems running X11, possibly due to a bug, Qt fires the qWarning
     # "QXcbClipboard::setMimeData: Cannot set X11 selection owner"
     # while setting clipboard data when copy/selection events are encountered
@@ -162,13 +173,6 @@ def main():
     os.environ["QT_FATAL_WARNINGS"] = "1"
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    dconf = DaemonConfig()
-    dconf.setup()
-    if dconf.valid():
-        config_dict = dconf.custom_config
-    else:
-        sys.exit("Error: Daemon configuration file is invalid!")
 
     app = QGuiApplication(sys.argv)
     c = Clipboard(config_dict)

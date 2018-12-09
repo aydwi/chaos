@@ -15,7 +15,7 @@ class DaemonConfig:
         self.custom_config = self.default_config
 
     def setup(self):
-        """Read and setup custom daemon configuration if provided."""
+        """Read and set custom daemon configuration if provided."""
         cur_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.split(cur_dir)[0]
         cfg_path = os.path.join(parent_dir, "config", "daemon.json")
