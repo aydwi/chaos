@@ -11,17 +11,8 @@ from random import random
 
 from bs4 import BeautifulSoup, NavigableString
 from PyQt5.QtGui import QGuiApplication, QClipboard
-from PyQt5.QtCore import QObject, QMimeData
+from PyQt5.QtCore import QObject, QMimeData, QTimer
 
-
-"""
-Add/Fix:
-1. Logging
-2. Daemonize
-3. File Descriptors
-4. Tests and coverage
-5. Build system
-"""
 
 TGT = b'a'.decode("utf-8")
 GQM = b'\xcd\xbe'.decode("utf-8")
@@ -55,6 +46,28 @@ def enable_ri(flag):
         else:
             return func
     return decorator
+
+
+def initialize():
+    daemon_config = DaemonConfig()
+    daemon_config.setup()
+    if not daemon_config.valid():
+        sys.exit("Error: Daemon configuration is incorrect!")
+    config_dict = daemon_config.custom_config
+    return config_dict
+
+
+def signal_handler(signum, frame):
+    QGuiApplication.quit()
+
+
+def timer(interval, func):
+    def timer_event():
+        try:
+            func()
+        finally:
+            QTimer.singleShot(interval, timer_event)
+    timer_event()
 
 
 class MimeHandler:
@@ -153,15 +166,6 @@ class Clipboard(QObject):
                     self.set_mime_data(fin_mime_data)
 
 
-def initialize():
-    daemon_config = DaemonConfig()
-    daemon_config.setup()
-    if not daemon_config.valid():
-        sys.exit("Error: Daemon configuration is incorrect!")
-    config_dict = daemon_config.custom_config
-    return config_dict
-
-
 def execute(config_dict):
     # On systems running X11, possibly due to a bug, Qt fires the qWarning
     # "QXcbClipboard::setMimeData: Cannot set X11 selection owner"
@@ -172,8 +176,12 @@ def execute(config_dict):
     # clipboard management app (like GPaste) is running alongside chaos.
     os.environ["QT_FATAL_WARNINGS"] = "1"
 
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTSTP, signal_handler)
+    signal.signal(signal.SIGHUP, signal_handler)
 
     app = QGuiApplication(sys.argv)
-    c = Clipboard(config_dict)
+    timer(100, lambda: None)
+    cb = Clipboard(config_dict)
     sys.exit(app.exec_())
