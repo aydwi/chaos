@@ -2,5 +2,5 @@
     "plaintext_only": false,
     "random_hit_chance": false,
     "random_instances": false,
-    "save_logs": false
+    "super_user": false
 }

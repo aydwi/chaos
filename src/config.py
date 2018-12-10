@@ -11,7 +11,7 @@ class DaemonConfig:
         self.default_config = {"plaintext_only": False,
                                "random_hit_chance": False,
                                "random_instances": False,
-                               "save_logs": False}
+                               "super_user": False}
         self.custom_config = self.default_config
 
     def setup(self):
@@ -31,19 +31,20 @@ class DaemonConfig:
             pass
 
     def valid(self):
-        """Return a bool indicating the validity of custom daemon configuration."""
+        """Return a bool indicating whether the provided daemon
+        configuration file follows the specification."""
         schemas = [{"plaintext_only": {"type": "boolean",
                                      "allowed": [False]},
                   "random_hit_chance": {"type": "boolean"},
                   "random_instances": {"type": "boolean",
                                        "forbidden": [True]},
-                  "save_logs": {"type": "boolean"}},
+                  "super_user": {"type": "boolean"}},
 
                   {"plaintext_only": {"type": "boolean",
                                      "allowed": [True]},
                   "random_hit_chance": {"type": "boolean"},
                   "random_instances": {"type": "boolean"},
-                  "save_logs": {"type": "boolean"}}]
+                  "super_user": {"type": "boolean"}}]
 
         schema = {"c": {"oneof_schema": schemas, "type": "dict"}}
         v = Validator(schema)
