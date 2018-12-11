@@ -34,8 +34,7 @@ class DaemonConfig:
             pass
 
     def valid(self):
-        """Return a bool indicating whether the provided daemon
-        configuration file follows the specification."""
+        """Return a bool indicating whether the provided daemon configuration file follows the specification."""
         schemas = [
             {
                 "plaintext_only": {"type": "boolean", "allowed": [False]},

@@ -90,8 +90,8 @@ class MimeHandler:
         if not self.format_list:
             return True
 
-        # Filter the MIME types "image/*" to ignore image data
-        # and "text/uri-list" to ignore files and directories.
+        # Filter the MIME types "image/*" to ignore image data and
+        # "text/uri-list" to ignore files and directories.
         if self.mime_data.hasImage() or self.mime_data.hasUrls():
             return True
 
@@ -100,13 +100,12 @@ class MimeHandler:
             if format.endswith('"'):
                 return True
 
-    # This method is wrapped by a decorator to modify its behaviour
-    # based on value of the config flag "random_instances", passed
-    # to it as an argument, handled by the function "enable_ri".
-    # Note that this is done when the class is instantiated (see the
-    # constructor), instead of when the class is created (which uses
-    # the @decorator syntax), because the argument comes from an
-    # instance variable (config_dict).
+    # This method is wrapped by a decorator to modify its behaviour based on
+    # value of the config flag "random_instances", passed to it as an argument,
+    # handled by the function "enable_ri". Note that this is done when the
+    # class is instantiated (see the constructor), instead of when the class
+    # is created (which uses @decorator syntax), because the argument comes
+    # from an instance variable (config_dict).
     def modify_text(self, text):
         s = text.replace(TGT, GQM)
         return s
@@ -150,13 +149,12 @@ class Clipboard(QObject):
         self.clipboard.setMimeData(fin_mime_data, mode=0)
         self.clipboard.blockSignals(tmp)
 
-    # This method is wrapped by a decorator to modify its behaviour
-    # based on value of the config flag "random_hit_chance", passed
-    # to it as an argument, handled by the function "enable_rhc".
-    # Note that this is done when the class is instantiated (see the
-    # constructor), instead of when the class is created (which uses
-    # the @decorator syntax), because the argument comes from an
-    # instance variable (config_dict).
+    # This method is wrapped by a decorator to modify its behaviour based on
+    # value of the config flag "random_hit_chance", passed to it as an
+    # argument, handled by the function "enable_rhc". Note that this is done
+    # when the class is instantiated (see the constructor), instead of when
+    # the class is created (which uses @decorator syntax), because the
+    # argument comes from an instance variable (config_dict).
     def reconstruct(self):
         mime_data = self.clipboard.mimeData(mode=0)
         fin_mime_data = QMimeData()
@@ -180,12 +178,12 @@ class Clipboard(QObject):
 
 def execute(config_dict):
     # On systems running X11, possibly due to a bug, Qt fires the qWarning
-    # "QXcbClipboard::setMimeData: Cannot set X11 selection owner"
-    # while setting clipboard data when copy/selection events are encountered
-    # in rapid succession, resulting in clipboard data not being set.
-    # This env variable acts as a fail-safe which aborts the application
-    # if this happens more than once. Similar situation arises when another
-    # clipboard management app (like GPaste) is running alongside chaos.
+    # "QXcbClipboard::setMimeData: Cannot set X11 selection owner" while
+    # setting clipboard data when copy/selection events are encountered in
+    # rapid succession, resulting in clipboard data not being set. This env
+    # variable acts as a fail-safe which aborts the application if this
+    # happens more than once. Similar situation arises when another clipboard
+    # management app (like GPaste) is running alongside chaos.
     os.environ["QT_FATAL_WARNINGS"] = "1"
 
     signal.signal(signal.SIGTERM, signal_handler)
