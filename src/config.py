@@ -6,12 +6,13 @@ from cerberus import Validator
 
 
 class DaemonConfig:
-
     def __init__(self):
-        self.default_config = {"plaintext_only": False,
-                               "random_hit_chance": False,
-                               "random_instances": False,
-                               "super_user": False}
+        self.default_config = {
+            "plaintext_only": False,
+            "random_hit_chance": False,
+            "random_instances": False,
+            "super_user": False,
+        }
         self.custom_config = self.default_config
 
     def setup(self):
@@ -24,8 +25,10 @@ class DaemonConfig:
                 try:
                     custom_config = json.load(f)
                 except json.JSONDecodeError:
-                    sys.exit("Error: Daemon configuration file is "
-                             "not a valid JSON document!")
+                    sys.exit(
+                        "Error: Daemon configuration file is "
+                        "not a valid JSON document!"
+                    )
             self.custom_config = custom_config
         except FileNotFoundError:
             pass
@@ -33,18 +36,20 @@ class DaemonConfig:
     def valid(self):
         """Return a bool indicating whether the provided daemon
         configuration file follows the specification."""
-        schemas = [{"plaintext_only": {"type": "boolean",
-                                     "allowed": [False]},
-                  "random_hit_chance": {"type": "boolean"},
-                  "random_instances": {"type": "boolean",
-                                       "forbidden": [True]},
-                  "super_user": {"type": "boolean"}},
-
-                  {"plaintext_only": {"type": "boolean",
-                                     "allowed": [True]},
-                  "random_hit_chance": {"type": "boolean"},
-                  "random_instances": {"type": "boolean"},
-                  "super_user": {"type": "boolean"}}]
+        schemas = [
+            {
+                "plaintext_only": {"type": "boolean", "allowed": [False]},
+                "random_hit_chance": {"type": "boolean"},
+                "random_instances": {"type": "boolean", "forbidden": [True]},
+                "super_user": {"type": "boolean"},
+            },
+            {
+                "plaintext_only": {"type": "boolean", "allowed": [True]},
+                "random_hit_chance": {"type": "boolean"},
+                "random_instances": {"type": "boolean"},
+                "super_user": {"type": "boolean"},
+            },
+        ]
 
         schema = {"c": {"oneof_schema": schemas, "type": "dict"}}
         v = Validator(schema)

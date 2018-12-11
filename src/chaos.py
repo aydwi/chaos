@@ -13,8 +13,8 @@ from PyQt5.QtGui import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, QMimeData, QTimer
 
 
-TGT = b'a'.decode("utf-8")
-GQM = b'\xcd\xbe'.decode("utf-8")
+TGT = b"a".decode("utf-8")
+GQM = b"\xcd\xbe".decode("utf-8")
 
 
 def enable_rhc(flag):
@@ -23,10 +23,12 @@ def enable_rhc(flag):
         def decorated_func(*args, **kwargs):
             if random() < 0.5:
                 func(*args, **kwargs)
+
         if flag:
             return decorated_func
         else:
             return func
+
     return decorator
 
 
@@ -35,15 +37,19 @@ def enable_ri(flag):
         @functools.wraps(func)
         def decorated_func(*args, **kwargs):
             text = args[0]
-            occurences = [index for index, val in enumerate(text) if val == TGT]
+            occurences = [
+                index for index, val in enumerate(text) if val == TGT
+            ]
             for occurence in occurences:
                 if random() < 0.5:
-                    text = text[:occurence] + GQM + text[occurence+1:]
+                    text = text[:occurence] + GQM + text[occurence + 1 :]
             return text
+
         if flag:
             return decorated_func
         else:
             return func
+
     return decorator
 
 
@@ -66,17 +72,19 @@ def timer(interval, func):
             func()
         finally:
             QTimer.singleShot(interval, timer_event)
+
     timer_event()
 
 
 class MimeHandler:
-
     def __init__(self, mime_data, fin_mime_data, format_list, config_dict):
         self.mime_data = mime_data
         self.fin_mime_data = fin_mime_data
         self.format_list = format_list
         self.config_dict = config_dict
-        self.modify_text = enable_ri(config_dict["random_instances"])(self.modify_text)
+        self.modify_text = enable_ri(config_dict["random_instances"])(
+            self.modify_text
+        )
 
     def restricted_type(self):
         if not self.format_list:
@@ -108,16 +116,18 @@ class MimeHandler:
             plaintext = self.mime_data.text()
             modified_plaintext = self.modify_text(plaintext)
             self.fin_mime_data.setText(modified_plaintext)
-            self.format_list.remove('text/plain')
+            self.format_list.remove("text/plain")
 
     def set_html(self):
         if self.mime_data.hasHtml():
             markup = self.mime_data.html()
             soup = BeautifulSoup(markup, "html.parser")
             for inner_text in list(soup.strings):
-                inner_text.replace_with(NavigableString(self.modify_text(inner_text)))
+                inner_text.replace_with(
+                    NavigableString(self.modify_text(inner_text))
+                )
             self.fin_mime_data.setHtml(str(soup))
-            self.format_list.remove('text/html')
+            self.format_list.remove("text/html")
 
     def set_other(self):
         for format in self.format_list:
@@ -126,12 +136,13 @@ class MimeHandler:
 
 
 class Clipboard(QObject):
-
     def __init__(self, config_dict):
         super().__init__()
         self.config_dict = config_dict
-        self.clipboard = QGuiApplication.clipboard()        
-        self.reconstruct = enable_rhc(config_dict["random_hit_chance"])(self.reconstruct)
+        self.clipboard = QGuiApplication.clipboard()
+        self.reconstruct = enable_rhc(config_dict["random_hit_chance"])(
+            self.reconstruct
+        )
         self.clipboard.dataChanged.connect(self.reconstruct)
 
     def set_mime_data(self, fin_mime_data):
@@ -150,7 +161,9 @@ class Clipboard(QObject):
         mime_data = self.clipboard.mimeData(mode=0)
         fin_mime_data = QMimeData()
         format_list = mime_data.formats()
-        mimeobj = MimeHandler(mime_data, fin_mime_data, format_list, self.config_dict)
+        mimeobj = MimeHandler(
+            mime_data, fin_mime_data, format_list, self.config_dict
+        )
 
         if not mimeobj.restricted_type():
             if not self.config_dict["plaintext_only"]:
