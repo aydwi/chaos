@@ -1,19 +1,28 @@
 #!/usr/bin/env python3
 
+"""
+Add/Fix:
+1. Daemon behaviour - privileges, pidfile, boot
+2. Tests and coverage
+3. CI
+4. Dependency management
+5. Build system
+"""
+
 import functools
 import os
 import signal
 import sys
 
-from config import DaemonConfig
-from random import random
-
 from bs4 import BeautifulSoup, NavigableString
+from config import DaemonConfig
+from daemon import DaemonContext
 from PyQt5.QtGui import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, QMimeData, QTimer
+from random import random
 
 
-TGT = b"a".decode("utf-8")
+TGT = "a"
 GQM = b"\xcd\xbe".decode("utf-8")
 
 
@@ -195,3 +204,10 @@ def execute(config_dict):
     timer(100, lambda: None)
     cb = Clipboard(config_dict)
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    context = DaemonContext(umask=0o002)
+    config_dict = initialize()
+    with context:
+        execute(config_dict)
