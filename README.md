@@ -10,3 +10,9 @@
 <br>
 
 *chaos* is a pastejacking tool which modifies text copied to the operating system clipboard. The idea is to replace the ASCII character semicolon (;) with an identical looking Unicode character Greek question mark (;) as soon as any text is copied to the clipboard, so that when a user tries to compile some copied code, their life becomes harder.
+
+<br><br>
+
+<p align="center">
+<img alt="demo" src="https://giant.gfycat.com/PhonyAdeptAmericanwarmblood.gif" />
+</p>
