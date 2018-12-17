@@ -14,6 +14,7 @@ python-daemon = "^2.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
+black = "=18.9b0"
 
 [build-system]
 requires = ["poetry>=0.12"]
