@@ -1,6 +1,5 @@
 {
     "plaintext_only": false,
     "random_hit_chance": false,
-    "random_instances": false,
-    "super_user": false
+    "random_instances": false
 }

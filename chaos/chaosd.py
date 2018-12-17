@@ -2,11 +2,10 @@
 
 """
 Add/Fix:
-1. Daemon behaviour - privileges, pidfile, boot
-2. Tests and coverage
-3. CI
-4. Dependency management
-5. Build system
+1. Tests and coverage
+2. CI
+3. Dependency management
+4. Build system
 """
 
 import functools
@@ -20,6 +19,7 @@ from daemon import DaemonContext
 from PyQt5.QtGui import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, QMimeData, QTimer
 from random import random
+from utils.context_manager import PidFile
 
 
 TGT = "a"
@@ -46,9 +46,7 @@ def enable_ri(flag):
         @functools.wraps(func)
         def decorated_func(*args, **kwargs):
             text = args[0]
-            occurences = [
-                index for index, val in enumerate(text) if val == TGT
-            ]
+            occurences = [index for index, val in enumerate(text) if val == TGT]
             for occurence in occurences:
                 if random() < 0.5:
                     text = text[:occurence] + GQM + text[occurence + 1 :]
@@ -62,7 +60,7 @@ def enable_ri(flag):
     return decorator
 
 
-def initialize():
+def get_config():
     daemon_config = DaemonConfig()
     daemon_config.setup()
     if not daemon_config.valid():
@@ -91,9 +89,7 @@ class MimeHandler:
         self.fin_mime_data = fin_mime_data
         self.format_list = format_list
         self.config_dict = config_dict
-        self.modify_text = enable_ri(config_dict["random_instances"])(
-            self.modify_text
-        )
+        self.modify_text = enable_ri(config_dict["random_instances"])(self.modify_text)
 
     def restricted_type(self):
         if not self.format_list:
@@ -131,9 +127,7 @@ class MimeHandler:
             markup = self.mime_data.html()
             soup = BeautifulSoup(markup, "html.parser")
             for inner_text in list(soup.strings):
-                inner_text.replace_with(
-                    NavigableString(self.modify_text(inner_text))
-                )
+                inner_text.replace_with(NavigableString(self.modify_text(inner_text)))
             self.fin_mime_data.setHtml(str(soup))
             self.format_list.remove("text/html")
 
@@ -168,9 +162,7 @@ class Clipboard(QObject):
         mime_data = self.clipboard.mimeData(mode=0)
         fin_mime_data = QMimeData()
         format_list = mime_data.formats()
-        mimeobj = MimeHandler(
-            mime_data, fin_mime_data, format_list, self.config_dict
-        )
+        mimeobj = MimeHandler(mime_data, fin_mime_data, format_list, self.config_dict)
 
         if not mimeobj.restricted_type():
             if not self.config_dict["plaintext_only"]:
@@ -185,7 +177,7 @@ class Clipboard(QObject):
                     self.set_mime_data(fin_mime_data)
 
 
-def execute(config_dict):
+def execute_app(config_dict):
     # On systems running X11, possibly due to a bug, Qt fires the qWarning
     # "QXcbClipboard::setMimeData: Cannot set X11 selection owner" while
     # setting clipboard data when copy/selection events are encountered in
@@ -207,7 +199,10 @@ def execute(config_dict):
 
 
 if __name__ == "__main__":
-    context = DaemonContext(umask=0o002)
-    config_dict = initialize()
+    uid = os.geteuid()
+    pid_path = "/tmp/chaos-{}.pid".format(uid)
+    context = DaemonContext(umask=0o002, pidfile=PidFile(pid_path))
+    config_dict = get_config()
+
     with context:
-        execute(config_dict)
+        execute_app(config_dict)
