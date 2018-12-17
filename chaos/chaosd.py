@@ -4,8 +4,7 @@
 Add/Fix:
 1. Tests and coverage
 2. CI
-3. Dependency management
-4. Build system
+3. Build system
 """
 
 import functools
@@ -19,7 +18,7 @@ from daemon import DaemonContext
 from PyQt5.QtGui import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, QMimeData, QTimer
 from random import random
-from utils.context_manager import PidFile
+from utils.pidfile import PidFile
 
 
 TGT = "a"
