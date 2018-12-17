@@ -6,6 +6,11 @@ authors = ["Ayush Dwivedi"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
+pyqt5 = "^5.11"
+cerberus = "^1.2"
+beautifulsoup4 = "^4.6"
+pyinstaller = "^3.4"
+python-daemon = "^2.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
