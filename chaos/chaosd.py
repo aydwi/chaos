@@ -18,6 +18,7 @@ from daemon import DaemonContext
 from PyQt5.QtGui import QGuiApplication, QClipboard
 from PyQt5.QtCore import QObject, QMimeData, QTimer
 from random import random
+from utils.pidfile import PidFile
 
 
 TGT = "a"
@@ -152,9 +153,9 @@ class Clipboard(QObject):
         self.clipboard.dataChanged.connect(self.reconstruct)
 
     def set_mime_data(self, fin_mime_data):
-        tmp = self.clipboard.blockSignals(True)
+        tmp_bool = self.clipboard.blockSignals(True)
         self.clipboard.setMimeData(fin_mime_data, mode=0)
-        self.clipboard.blockSignals(tmp)
+        self.clipboard.blockSignals(tmp_bool)
 
     # This method is wrapped by a decorator to modify its behaviour based on
     # value of the config flag "random_hit_chance", passed to it as an
@@ -205,11 +206,15 @@ def execute_app(config_dict):
 
 
 if __name__ == "__main__":
-    # uid = os.geteuid()
-    # pid_path = "/tmp/chaos-{}.pid".format(uid)
+    uid = os.geteuid()
+    pid_path = "/tmp/chaos-{}.pid".format(uid)
     config_dict = get_config()
+
     context = DaemonContext(
-        stdin=sys.stdin, stderr=sys.stderr, stdout=sys.stdout
+        stdin=sys.stdin,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+        pidfile=PidFile(pid_path),
     )
 
     with context:
