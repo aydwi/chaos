@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 
-"""
-Add/Fix:
-1. Tests and coverage
-2. CI
-3. Build system
-"""
-
 import functools
 import os
 import signal
