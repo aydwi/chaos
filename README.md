@@ -13,6 +13,7 @@
 
 Click [here](https://vimeo.com/306616721) for a small demo showing what happens when *chaos* is running in the background.
 
+<br>
 
 ### Warning - Please read before proceeding
 
@@ -20,13 +21,16 @@ Running *chaos* is a **potentially destructive** action, and it can cause irreve
 
 It is not recommended to leave *chaos* running on a system for an extended period of time. Please use it judiciously, if you decide to do so.
 
+<br>
 
 ### Installation
 
-There are two ways-
 
 #### Download the pre-built binary
 
-[Download] the latest release, unarchive it, and run the executable inside.
+**[Download](https://github.com/aydwi/chaos/releases)** the latest release, unarchive it, and run the executable inside.
+
 
 #### Build from source
+
+You can also build *chaos* from source. It requires
