@@ -23,11 +23,11 @@ It is not recommended to leave *chaos* running on a system for an extended perio
 
 ## Installation
 
-#### Download the pre-built binary
+### Download the pre-built binary
 
 **[Download](https://github.com/aydwi/chaos/releases)** the latest release, unarchive it, and run the executable inside.
 
-#### Build from source
+### Build from source
 
 You can also build *chaos* from source. This requires-
 
