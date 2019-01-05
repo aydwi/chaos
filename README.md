@@ -13,10 +13,20 @@
 
 Click [here](https://vimeo.com/306616721) for a small demo showing what happens when *chaos* is running in the background.
 
-<br>
 
 ### Warning - Please read before proceeding
 
 Running *chaos* is a **potentially destructive** action, and it can cause irreversible damage when important text (like cryptographic keys) is copied to clipboard without any visible indication that the text was modified. I wrote it as a proof-of-concept tool to show how easy it is for a rogue program to manipulate your system clipboard maliciously (after reading about a malicious [clipboard hijacker discovered in PyPI](https://medium.com/@bertusk/crydataptocurrency-clipboard-hijacker-discovered-in-pypi-repository-b66b8a534a8)), as well as a tool which can be used to play practical jokes on people, if that's your thing.
 
 It is not recommended to leave *chaos* running on a system for an extended period of time. Please use it judiciously, if you decide to do so.
+
+
+### Installation
+
+There are two ways-
+
+#### Download the pre-built binary
+
+[Download] the latest release, unarchive it, and run the executable inside.
+
+#### Build from source
