@@ -16,9 +16,11 @@ Click [here](https://vimeo.com/306616721) for a small demo showing what happens 
 
 ## Warning - Please read before proceeding
 
-Running *chaos* is a **potentially destructive** action, and it can cause irreversible damage when important text (say a password, or a cryptographic key) is copied to clipboard without any visible indication that the text was modified. I wrote it as a proof-of-concept tool to show how easy it is for a rogue program to manipulate your system clipboard (after reading about a malicious [clipboard hijacker discovered in PyPI](https://medium.com/@bertusk/crydataptocurrency-clipboard-hijacker-discovered-in-pypi-repository-b66b8a534a8)), as well as a tool which can be used to play practical jokes on people, if that's your thing.
+Running *chaos* is a **potentially destructive** action, and it can cause irreversible damage when important text (say a password, or a cryptographic key) is copied to clipboard without any visible indication that the text was modified.
 
-It is not recommended to leave *chaos* running on a system for an extended period of time. Please use it judiciously, if you decide to do so.
+I wrote it as a proof-of-concept tool to show how easy it is for a rogue program to manipulate your system clipboard (after reading about a malicious [clipboard hijacker discovered in PyPI](https://medium.com/@bertusk/crydataptocurrency-clipboard-hijacker-discovered-in-pypi-repository-b66b8a534a8)), as well as a tool which can be used to play practical jokes on people, if that's your thing.
+
+As its name signifies, it is an agent of chaos. Please use it judiciously, if you decide to do so.
 
 
 ## Installation
