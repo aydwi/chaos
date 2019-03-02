@@ -63,7 +63,7 @@ def get_config():
     return config_dict
 
 
-def signal_handler(signum, frame):
+def qt_quit(signum, frame):
     QGuiApplication.quit()
 
 
@@ -187,10 +187,10 @@ def execute_app(config_dict):
     # management app (like GPaste) is running alongside chaos.
     os.environ["QT_FATAL_WARNINGS"] = "1"
 
-    signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTSTP, signal_handler)
-    signal.signal(signal.SIGHUP, signal_handler)
+    signal.signal(signal.SIGTERM, qt_quit)
+    signal.signal(signal.SIGINT, qt_quit)
+    signal.signal(signal.SIGTSTP, qt_quit)
+    signal.signal(signal.SIGHUP, qt_quit)
 
     app = QGuiApplication(sys.argv)
     timer(100, lambda: None)
