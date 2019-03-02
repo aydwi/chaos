@@ -13,6 +13,7 @@
 
 Click [here](https://vimeo.com/306616721) for a small demo showing what happens when *chaos* is running in the background.
 
+<br>
 
 ## Warning - Please read before proceeding
 
@@ -20,8 +21,9 @@ Running *chaos* is a **potentially destructive** action, and it can cause irreve
 
 I wrote it as a proof-of-concept tool to show how easy it is for a rogue program to manipulate your system clipboard (after reading about a malicious [clipboard hijacker discovered in PyPI](https://medium.com/@bertusk/crydataptocurrency-clipboard-hijacker-discovered-in-pypi-repository-b66b8a534a8)), as well as a tool which can be used to play practical jokes on people, if that's your thing.
 
-As its name signifies, it is an agent of chaos. Please use it judiciously, if you decide to do so.
+As the name signifies, it is an agent of chaos. Please use it judiciously, if you decide to do so.
 
+<br>
 
 ## Installation
 
@@ -31,8 +33,8 @@ As its name signifies, it is an agent of chaos. Please use it judiciously, if yo
 
 ### Build from source
 
-Building *chaos* from source requires:
+Building *chaos* from source requires the folowing software to be installed and added to the `PATH`-
 
-* Python 3
+* Python 3.6 or higher
 * [`poetry`](https://poetry.eustace.io/)
 * [`virtualenv`](https://virtualenv.pypa.io/en/latest/)
