@@ -47,7 +47,7 @@ To build *chaos* from source, execute the Bash script `build.sh` with necessary 
 
 ## Usage
 
-*chaos* runs in the background as a Unix-style deamon process named `chaosd`. To run it, execute the binary `chaosd` present inside the directory `chaos/chaos/`-
+*chaos* runs in the background as a Unix-style deamon process named `chaosd`. To run it, execute the binary `chaosd` present inside the directory `chaos/`-
 
 `./chaosd`
 
