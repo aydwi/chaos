@@ -51,7 +51,7 @@ Note that this will remove all the source code as well, so if you are working on
 
 ### Execution
 
-chaos runs in the background as a Unix-style deamon process named chaosd, and does not require any superuser privileges. To run it, execute the binary `chaosd` present inside the directory `chaos/`-
+*chaos* runs in the background as a Unix-style deamon process, and does not require any superuser privileges. To run it, execute the binary `chaosd` present inside the directory `chaos/`-
 
 `./chaosd`
 
