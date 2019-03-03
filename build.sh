@@ -27,7 +27,7 @@ cd ../..
 rm -rf chaos \
     chaos-build-env \
     chaos.egg-info \
-    pip-wheel-metadata \
+    pip-wheel-metadata
 mv chaosd chaos
-find . ! -name 'build.sh' -maxdepth 1 -type f -exec rm -f {} +
+find . -maxdepth 1 -type f ! -name 'build.sh' -exec rm -f {} +
 rm build.sh
