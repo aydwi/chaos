@@ -43,17 +43,21 @@ To build *chaos* from source, execute the Bash script `build.sh` with necessary 
 
 `./build.sh`
 
+Note that this will remove all the source code as well, so if you are working on the code, you might want to modify the build script (see the comments inside the script).
+
 <br>
 
 ## Usage
 
-*chaos* runs in the background as a Unix-style deamon process named `chaosd`. To run it, execute the binary `chaosd` present inside the directory `chaos/`-
+### Execution
+
+chaos runs in the background as a Unix-style deamon process named chaosd, and does not require any superuser privileges. To run it, execute the binary `chaosd` present inside the directory `chaos/`-
 
 `./chaosd`
 
-To stop it, kill the daemon by sending a `SIGTERM` or `SIGINT`-
+To stop it, kill the daemon-
 
-`kill -SIGINT $(cat $(echo /tmp/chaos-$(id -u).pid))`
+`kill $(cat $(echo /tmp/chaos-$(id -u).pid))`
 
 
 ### Configuration
