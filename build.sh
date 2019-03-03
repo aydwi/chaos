@@ -27,7 +27,10 @@ pyinstaller --noconfirm \
 # Get out of the virtual environment
 deactivate
 
-# Rearrangement and cleanup of files and directories
+# Rearrangement and cleanup of files and directories.
+# NOTE: Comment everything beyond this point if you don't want the source
+#       code to be removed. Check chaos/dist/ in this case for the directory
+#       containing the executable.
 cleanup () {
     rm -rf chaos \
         chaos-build-env \
