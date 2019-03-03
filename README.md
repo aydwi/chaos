@@ -33,7 +33,7 @@ Download the latest release from the [releases](https://github.com/aydwi/chaos/r
 
 ### Build from source
 
-Before building, make sure the folowing software is installed and added to the `PATH`-
+Before building, make sure the following software is installed and added to the `PATH`-
 
 * Python 3.6 or higher
 * [`poetry`](https://poetry.eustace.io/)
@@ -55,3 +55,15 @@ To stop it, kill the daemon by sending a `SIGTERM` or `SIGINT`-
 
 `kill -SIGINT $(cat $(echo /tmp/chaos-$(id -u).pid))`
 
+
+### Configuration
+
+An optional configuration file `daemon.json` can be placed inside a parallel directory `config/` before starting the daemon to control its behaviour. Following options are currently supported-
+
+| Flag | Description |
+| --- | --- |
+| `plaintext_only` | Only plaintext is modified, and all formatted text is ignored |
+| `random_hit_chance` | Cut/copy events will be ignored entirely with a probability of 0.5 |
+| `random_instances` | Random instances of target character (;) will be modified throughout the copied text. This flag can be set **if and only if** `plaintext_only` is also set.
+
+If no configuration file is provided, every flag is assumed to be unset.
