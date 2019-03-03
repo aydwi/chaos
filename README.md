@@ -29,12 +29,29 @@ As the name signifies, it is an agent of chaos. Please use it judiciously, if yo
 
 ### Download the pre-built binary
 
-**[Download](https://github.com/aydwi/chaos/releases)** the latest release, unarchive it, and run the executable inside.
+Download the latest release from the [releases](https://github.com/aydwi/chaos/releases) page and unarchive it. No further installation is required.
 
 ### Build from source
 
-Building *chaos* from source requires the folowing software to be installed and added to the `PATH`-
+Before building, make sure the folowing software is installed and added to the `PATH`-
 
 * Python 3.6 or higher
 * [`poetry`](https://poetry.eustace.io/)
 * [`virtualenv`](https://virtualenv.pypa.io/en/latest/)
+
+To build *chaos* from source, execute the Bash script `build.sh` with necessary privileges-
+
+`./build.sh`
+
+<br>
+
+## Usage
+
+*chaos* runs in the background as a Unix-style deamon process named `chaosd`. To run it, execute the binary `chaosd` present inside the directory `chaos/chaos/`-
+
+`./chaosd`
+
+To stop it, kill the daemon by sending a `SIGTERM` or `SIGINT`-
+
+`kill -SIGINT $(cat $(echo /tmp/chaos-$(id -u).pid))`
+
