@@ -14,7 +14,10 @@ from random import random
 from utils.pidfile import PidFile
 
 
-TGT = "a"
+# Target string - The piece of text that will be replaced
+TGT = ";"
+
+# The string that replaces the target string
 GQM = b"\xcd\xbe".decode("utf-8")
 
 
