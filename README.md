@@ -9,7 +9,7 @@
 
 <br>
 
-*chaos* is a pastejacking tool which modifies text copied to the operating system clipboard. The idea is to replace the ASCII character semicolon (;) with an identical looking Unicode character Greek question mark (;) as soon as any text is copied to the clipboard, so that when a user tries to compile some copied code, their life becomes harder.
+*chaos* is a pastejacking tool for GNU/Linux which modifies text copied to the operating system clipboard. The idea is to replace the ASCII character semicolon (;) with an identical looking Unicode character Greek question mark (;) as soon as any text is copied to the clipboard, so that when a user tries to compile some copied code, their life becomes harder.
 
 Click [here](https://vimeo.com/320997444) for a small demo showing what happens when *chaos* is running in the background.
 
@@ -71,3 +71,13 @@ An optional configuration file `daemon.json` can be placed inside a parallel dir
 | `random_instances` | Random instances of target character (;) will be modified throughout the copied text. This flag can be set **if and only if** `plaintext_only` is also set.
 
 If no configuration file is provided, every flag is assumed to be unset.
+
+<br>
+
+## Notes
+
+* This tool could be used as a general purpose pastejacker by setting `TGT` and `GQM` in `chaosd.py` as required (see the comments) and rebuilding the binary. This might be generalized in a future release.
+
+* The only platform currently supported is GNU/Linux. macOS support won't be particularly useful due to [this](https://doc.qt.io/qt-5/qclipboard.html#dataChanged) limitation, but Windows and BSD support are in the pipeline.
+
+* There is no logging of any kind at the moment. This might change in the future. Remember, this is the first release and a lot can be added. If you wish to ask/discuss anything, hop on to the [Gitter room](https://gitter.im/chaos-tool/Lobby). Any contributions are welcome.
