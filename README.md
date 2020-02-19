@@ -1,6 +1,5 @@
 # chaos
 
-[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/chaos-tool/Lobby)
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/aydwi/chaos)
 
 <br>
@@ -80,6 +79,6 @@ If no configuration file is provided, every flag is assumed to be unset.
 
 * The only platform currently supported is GNU/Linux. macOS support won't be particularly useful due to [this](https://doc.qt.io/qt-5/qclipboard.html#dataChanged) limitation, but Windows and BSD support are in the pipeline.
 
-* There is no logging of any kind at the moment. This might change in the future. Remember, this is the first release and a lot can be added. If you wish to ask/discuss anything, hop on to the [Gitter room](https://gitter.im/chaos-tool/Lobby). Any contributions are welcome.
+* There is no logging of any kind at the moment. This might change in the future, as this is the first release and a lot can be added. Contributions to the project are very welcome.
 
-* This project is partially inspired by Greg Toombs' **[mimic](https://github.com/reinderien/mimic)**. Check that out for even more fun.
+* This project is partially inspired by Greg Toombs' **[mimic](https://github.com/reinderien/mimic)**. Check that out as well.
