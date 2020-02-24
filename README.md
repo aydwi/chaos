@@ -1,7 +1,5 @@
 # c̷h̵a̶o̴s̸
 
-[![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/aydwi/chaos)
-
 <br>
 
 <blockquote><p>MT: Replace a semicolon (;) with a greek question mark (;) in your friend&#39;s C# code and watch them pull their hair out over the syntax error</p>&mdash; Peter Ritchie (@peterritchie) <a href="https://twitter.com/peterritchie/status/534011965132120064">November 16, 2014</a></blockquote>
