@@ -1,4 +1,4 @@
-# chaos
+# c̷h̵a̶o̴s̸
 
 [![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/aydwi/chaos)
 
