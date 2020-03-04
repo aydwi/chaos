@@ -79,4 +79,4 @@ If no configuration file is provided, every flag is assumed to be unset.
 
 * There is no logging of any kind at the moment. This might change in the future, as this is the first release and a lot can be added. Contributions to the project are very welcome.
 
-* This project is partially inspired by Greg Toombs' **[mimic](https://github.com/reinderien/mimic)**. Check that out as well.
+* This project was also inspired by Greg Toombs' **[mimic](https://github.com/reinderien/mimic)**. Check that out as well.
