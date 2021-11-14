@@ -1,4 +1,6 @@
-# c̷h̵a̶o̴s̸
+# chaos
+
+##### [Status: Unmaintained]
 
 <br>
 
